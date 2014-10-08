@@ -1,5 +1,8 @@
 package com.example.newdobi;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.doubi.common.ConstValue;
 import com.doubi.logic.ImageManager;
 import com.doubi.logic.ImageManager.RectangleManager;
@@ -116,23 +119,16 @@ public class BaseImageView extends ImageView {
 				cos = rotation(event);
 				switch(MainActivity.current) {
 				case 0:
-					mBmps[0].matrix.postScale(length/preLength, length/preLength,centerX,centerY);
-					mBmps[0].matrix.postRotate(cos-preCos,centerX,centerY);
-					//twoFinger(event, mBmps[0]);
+					changeBmp(mBmps[0]);
 					break;
 				case 1:
-					mBmps[0].matrix.postScale(length/preLength, length/preLength,centerX,centerY);
-					mBmps[0].matrix.postRotate(cos-preCos,centerX,centerY);
-					mBmps[1].matrix.postScale(length/preLength, length/preLength,centerX,centerY);
-					mBmps[1].matrix.postRotate(cos-preCos,centerX,centerY);
+					changeBmp(mBmps[0],mBmps[1]);
 					break;
 				case 2:
-					mBmps[0].matrix.postScale(length/preLength, length/preLength,centerX,centerY);
-					mBmps[0].matrix.postRotate(cos-preCos,centerX,centerY);
-					mBmps[1].matrix.postScale(length/preLength, length/preLength,centerX,centerY);
-					mBmps[1].matrix.postRotate(cos-preCos,centerX,centerY);
-					mBmps[2].matrix.postScale(length/preLength, length/preLength,centerX,centerY);
-					mBmps[2].matrix.postRotate(cos-preCos,centerX,centerY);
+					changeBmp(mBmps[0],mBmps[1],mBmps[2]);
+					break;
+				case 3:
+					changeBmp(mBmps[0],mBmps[1],mBmps[2],mBmps[3]);
 					break;
 				}
 				
@@ -144,6 +140,12 @@ public class BaseImageView extends ImageView {
 
 		
 		return true;
+	}
+	private void changeBmp(Bmp...bmps) {
+		for(Bmp bmp : bmps){
+			bmp.matrix.postScale(length/preLength, length/preLength,centerX,centerY);
+			bmp.matrix.postRotate(cos-preCos,centerX,centerY);
+		}
 	}
 	
     public float[] rotalPoint(float[] p, float X, float Y,Matrix matrix) {
@@ -308,58 +310,34 @@ public class BaseImageView extends ImageView {
 		return (float) Math.toDegrees(radians);
 	}
 	private void setCenter(int current){
+		float[] center=new float[2];
 		switch (current) {
 		case 0:
-			float[] values=new float[9];
-			mBmps[0].matrix.getValues(values);
-			centerX=values[2]+mBmps[0].getPic().getWidth()*values[0]/2;
-			centerY=values[5]+mBmps[0].getPic().getHeight()*values[0]/2;
+			center=getCenter(mBmps[0]);
+			centerX=center[0];
+			centerY=center[1];
 			break;
 		case 1:
-			float[] values1=new float[9];
-			float[] values2=new float[9];
-			mBmps[0].matrix.getValues(values1);
-			mBmps[1].matrix.getValues(values2);
-			centerX=values1[2]+(values2[2]+mBmps[0].getPic().getWidth()*values2[0]-values1[2])/2;
-			centerY=values1[5]+(values2[5]+mBmps[0].getPic().getHeight()*values2[0]-values1[5])/2;
+			center=getCenter(mBmps[0],mBmps[1]);
+			centerX=center[0];
+			centerY=center[1];
 			break;
 		case 2:
-			float[][] values_2=new float[9][3];
-			values_2[0]=new float[9];
-			values_2[1]=new float[9];
-			values_2[2]=new float[9];
-			mBmps[0].matrix.getValues(values_2[0]);
-			mBmps[1].matrix.getValues(values_2[1]);
-			mBmps[2].matrix.getValues(values_2[2]);
-			float left=getMin(values_2[0][2],values_2[1][2],values_2[2][2]);
-			int right=getMaxNum(values_2[0][2],values_2[1][2],values_2[2][2]);
-			float top=getMin(values_2[0][5],values_2[1][5],values_2[2][5]);
-			int bottom=getMaxNum(values_2[0][5],values_2[1][5],values_2[2][5]);
-			centerX=left+(values_2[right][2]+mBmps[right].getPic().getWidth()*values_2[right][0]-left)/2;
-			centerY=top+(values_2[bottom][5]+mBmps[bottom].getPic().getWidth()*values_2[bottom][0]-top)/2;
+			center=getCenter(mBmps[0],mBmps[1],mBmps[2]);
+			centerX=center[0];
+			centerY=center[1];
 			break;
 		case 3:
-			
+			center=getCenter(mBmps[0],mBmps[1],mBmps[2],mBmps[3]);
+			centerX=center[0];
+			centerY=center[1];
 
 		default:
 			break;
 		}
 	}
 	
-	private int getMaxNum(float f, float g, float h) {
-		float[] values=new float[]{f,g,h};
-		int max=0;
-		for(int i=0;i<values.length;i++){
-			if(values[i]>values[max])
-				max=i;
-		}
-		return max;
-	}
-	private float getMin(float f, float g, float h) {
-		float min=Math.min(f, g);
-		min=Math.min(min, h);
-		return min;
-	}
+	
 
 	/** ===============内部算法，不需调整 ===========end====================* */
 	
@@ -772,8 +750,10 @@ public class BaseImageView extends ImageView {
 	 */
 	private boolean isPoint(Bmp bmp, float X, float Y) {
 		boolean result = false;
-		float[] point=new float[]{0,0};
+		float[] point=new float[]{bmp.getPic().getWidth()/2,bmp.getPic().getHeight()/2};
 		bmp.matrix.mapPoints(point);
+		System.out.println(X+"...."+Y);
+		System.out.println(point[0]+"...."+point[1]);
 		return result;
 	}
 	private float getBmpLeft(Bmp bmp){
@@ -794,13 +774,48 @@ public class BaseImageView extends ImageView {
 	private float[] getCenter(Bmp bmp){
 		float[] values=new float[9];
 		bmp.matrix.getValues(values);
-		float[] point=new float[]{bmp.getXY(1),bmp.getXY(2)};
+		float[] point=new float[]{bmp.getPic().getWidth()/2,bmp.getPic().getHeight()/2};
 		bmp.matrix.mapPoints(point);
 		System.out.println(point[0]+"....."+point[1]);
 		return point;
 	}
+	private float[] getCenter(Bmp... bmps){
+		List<float[]> apexs = new ArrayList<float[]>();
+		for(Bmp bmp :bmps){
+			float[][] rect = getRect(bmp);
+			// 将每个顶点放在集合中
+			for (float[] f : rect) {
+				apexs.add(f);
+			}
+		}
+		// 找出所有点中最外围的点
+		float minX = apexs.get(0)[0], minY = apexs.get(0)[1], maxX = 0, maxY = 0;
+		for (float[] apex : apexs) {
+			minX = minX < apex[0] ? minX : apex[0];
+			minY = minY < apex[1] ? minY : apex[1];
+			maxX = maxX < apex[0] ? apex[0] : maxX;
+			maxY = maxY < apex[1] ? apex[1] : maxY;
+		}
+		return new float[]{(maxX + minX)/2,(maxY + minY)/2};
+	}
 	
-	
+	private float[][] getRect(Bmp bmp){
+		if(bmp!=null){
+			float[] f = new float[9];
+			bmp.matrix.getValues(f);
+			float[][] rect=new float[4][2];
+			rect[0][0] = f[0] * 0 + f[1] * 0 + f[2];
+			rect[0][1] = f[3] * 0 + f[4] * 0 + f[5];
+			rect[1][0] = f[0] * bmp.getPic().getWidth() + f[1] * 0 + f[2];
+			rect[1][1] = f[3] * bmp.getPic().getWidth() + f[4] * 0 + f[5];
+			rect[2][0] = f[0] * 0 + f[1] * bmp.getPic().getHeight() + f[2];
+			rect[2][1] = f[3] * 0 + f[4] * bmp.getPic().getHeight() + f[5];
+			rect[3][0] = f[0] * bmp.getPic().getWidth() + f[1] * bmp.getPic().getHeight() + f[2];
+			rect[3][1] = f[3] * bmp.getPic().getWidth() + f[4] * bmp.getPic().getHeight() + f[5];
+			return rect;
+		}
+		return null;
+	}
 	
 	
 	
