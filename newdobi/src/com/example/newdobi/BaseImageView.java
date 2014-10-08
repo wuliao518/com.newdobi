@@ -774,8 +774,6 @@ public class BaseImageView extends ImageView {
 		boolean result = false;
 		float[] point=new float[]{0,0};
 		bmp.matrix.mapPoints(point);
-		
-		
 		return result;
 	}
 	private float getBmpLeft(Bmp bmp){
@@ -792,6 +790,14 @@ public class BaseImageView extends ImageView {
 		float[] values=new float[9];
 		bmp.matrix.getValues(values);
 		return (float)Math.sqrt(Math.pow(values[0], 2)+Math.pow(values[3], 2));
+	}
+	private float[] getCenter(Bmp bmp){
+		float[] values=new float[9];
+		bmp.matrix.getValues(values);
+		float[] point=new float[]{bmp.getXY(1),bmp.getXY(2)};
+		bmp.matrix.mapPoints(point);
+		System.out.println(point[0]+"....."+point[1]);
+		return point;
 	}
 	
 	
